@@ -10,13 +10,15 @@ resource "google_compute_instance" "app" {
     }
   }
 
+  /*
   connection {
     type        = "ssh"
     user        = "appuser"
     agent       = false
     private_key = "${file(var.private_key_path)}"
   }
-
+  */
+  
   network_interface {
     network = "default"
 

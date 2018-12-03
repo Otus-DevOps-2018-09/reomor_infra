@@ -8,22 +8,31 @@ before_install:
 - curl https://raw.githubusercontent.com/express42/otus-homeworks/2018-09/run.sh |
   bash
 - sudo pip install ansible
+- sudo pip install ansible-lint
 - packer validate -var-file=packer/variables.json.example packer/app.json
 - packer validate -var-file=packer/variables.json.example packer/db.json
 - packer validate -var-file=packer/variables.json.example packer/immutable.json
 - packer validate -var-file=packer/variables.json.example packer/ubuntu16.json
-- wget https://releases.hashicorp.com/terraform/0.11.10/terraform_0.11.10_linux_amd64.zip -O terraform.zip
-- unzip terraform.zip
-- cd terraform/stage
+- mkdir -p bin
+- cd bin
+- wget https://releases.hashicorp.com/terraform/0.11.10/terraform_0.11.10_linux_amd64.zip
+- wget https://github.com/wata727/tflint/releases/download/v0.7.2/tflint_linux_386.zip
+- unzip terraform_0.11.10_linux_amd64.zip
+- unzip tflint_linux_386.zip
+- cd ../terraform/stage
+- rm backend.tf
 - mv terraform.tfvars.example terraform.tfvars 
-- ../../terraform init
-- ../../terraform validate
-- tflint
+- ../../bin/terraform init
+- ../../bin/terraform validate -check-variables=false
+- ../../bin/tflint
 - cd ../prod
-- ../../terraform init
-- ../../terraform validate
-- tflint
-- cd ../../ansible && ansible-lint playbooks/site.yml --exclude=roles/jdauphant.nginx
+- rm backend.tf
+- mv terraform.tfvars.example terraform.tfvars 
+- ../../bin/terraform init
+- ../../bin/terraform validate -check-variables=false
+- ../../bin/tflint
+- cd ../../ansible 
+- ansible-lint playbooks/site.yml --exclude=roles/jdauphant.nginx
 notifications:
   slack:
     rooms:

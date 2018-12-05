@@ -1,6 +1,9 @@
----
-- name: App deploy
+- name: Deploy App
   hosts: app
+  become: true
+  vars:
+    deploy_user: ubuntu
+
   tasks:
     - name: Fetch the latest version of application code
       git:
@@ -9,7 +12,7 @@
         version: monolith
       notify: restart puma
 
-    - name: Bundle install
+    - name: bundle install
       bundler:
         state: present
         chdir: "/home/{{ deploy_user }}/reddit"

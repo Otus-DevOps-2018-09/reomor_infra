@@ -651,3 +651,12 @@ inventory is generated automatically according to Vagrantfile like
 [db] #group
 dbserver 10.10.10.20
 ```
+add extra_vars with the highest priority
+ubuntu is default user in vagrant VM
+```
+...
+ansible.extra_vars = {
+    "deploy_user" => "ubuntu"
+  }
+...
+```

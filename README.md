@@ -633,3 +633,21 @@ provisioning
 vagrant destroy
 vagrant provision dbserver
 ```
+provision example
+```
+...
+  db.vm.provision "ansible" do |ansible|
+      ansible.playbook = "playbooks/site.yml"
+      ansible.groups = {
+        "db" => ["dbserver"],
+        "db:vars" => {"mongo_bind_ip" => "0.0.0.0"}
+      }
+    end
+...
+```
+inventory is generated automatically according to Vagrantfile like
+> cat .vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory
+```
+[db] #group
+dbserver 10.10.10.20
+```

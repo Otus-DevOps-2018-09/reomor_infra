@@ -628,3 +628,8 @@ vagrant up
 vagrant box list
 vagrant status
 ```
+provisioning
+```
+vagrant destroy
+vagrant provision dbserver
+```

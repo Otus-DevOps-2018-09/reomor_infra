@@ -675,3 +675,12 @@ ansible.extra_vars = {
   }
 ...
 ```
+install virtualenv
+```
+pip install virtualenv
+cd my_project_folder
+virtualenv my_project
+source my_project/bin/activate
+pip install -r requirements.txt
+deactivate
+```

@@ -660,3 +660,18 @@ ansible.extra_vars = {
   }
 ...
 ```
+add nginx proxy settings in Vagrantfile
+```
+...
+ansible.extra_vars = {
+    deploy_user: "ubuntu",
+    nginx_sites: {
+      "default" => [
+        "listen 80",
+        "server_name 'reddit'",
+        "location / { proxy_pass http://127.0.0.1:9292; }"
+      ]
+    }
+  }
+...
+```

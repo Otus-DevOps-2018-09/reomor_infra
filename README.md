@@ -786,3 +786,7 @@ before_install:
   - chmod 0600 /home/travis/.ssh/google_compute_engine
 ```
 name of the repo is a name of the role
+pull it back
+```
+ansible-galaxy install git+https://github.com/reomor/db.git
+```

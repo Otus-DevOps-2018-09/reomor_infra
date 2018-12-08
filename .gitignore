@@ -16,3 +16,4 @@ jdauphant.nginx
 .cache
 .pytest_cache
 role-test
+db

@@ -2,8 +2,5 @@
 - name: Ruby installation
   hosts: all
   become: true
-  tasks:
-    - name: Install list of ruby packages
-      apt: 
-        name: ['ruby-full', 'ruby-bundler', 'build-essential']
-        state: present
+  roles:
+   - app

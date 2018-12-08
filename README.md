@@ -736,3 +736,7 @@ run tests
 ```
 molecule verify
 ```
+build packer images with ansible roles
+```
+packer build -var-file packer/variables.json packer/app.json
+```

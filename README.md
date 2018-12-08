@@ -684,7 +684,8 @@ source my_project/bin/activate
 pip install -r requirements.txt
 deactivate
 ```
-molecule init in ansible/roles/db
+molecule init in
+> ansible/roles/db
 ```
 molecule init scenario --scenario-name default -r db -d vagrant
 ```
@@ -715,4 +716,23 @@ create test VM in ansible/roles/db
 molecule create
 molecule list
 molecule login -h instance # ssh
+```
+playbook for role applying db/molecule/default/playbook.yml
+```
+---
+- name: Converge
+  become: true
+  hosts: all
+  vars:
+    mongo_bind_ip: 0.0.0.0
+  roles:
+    - role: db
+```
+apply playbook.yml
+```
+molecule converge
+```
+run tests
+```
+molecule verify
 ```

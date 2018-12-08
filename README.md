@@ -757,4 +757,32 @@ after_script:
 ```
 ssh-keygen -t rsa -f google_compute_engine -C 'travis' -q -N ''
 ```
-3. 
+3. add repository https://travis-ci.org/dashboard (auth through github)
+4. add
+```
+travis encrypt GCE_SERVICE_ACCOUNT_EMAIL='ci-test@infra-179032.iam.gserviceaccount.com' --add
+travis encrypt GCE_CREDENTIALS_FILE="$(pwd)/credentials.json" --add
+travis encrypt GCE_PROJECT_ID='infra-179032' --add
+```
+5. encrypt secrets
+```
+tar cvf secrets.tar credentials.json google_compute_engine
+travis login
+travis encrypt-file secrets.tar --add
+```
+add to .travis.yml
+```
+script:
+- molecule create
+- molecule converge
+- molecule verify
+after_script:
+- molecule destroy
+before_install:
+  - openssl aes-256-cbc -K $encrypted_48923027f180_key -iv $encrypted_48923027f180_iv
+    -in secrets.tar.enc -out secrets.tar -d
+  - tar xvf secrets.tar
+  - mv google_compute_engine /home/travis/.ssh/
+  - chmod 0600 /home/travis/.ssh/google_compute_engine
+```
+name of the repo is a name of the role

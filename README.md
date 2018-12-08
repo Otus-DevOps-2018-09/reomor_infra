@@ -740,3 +740,21 @@ build packer images with ansible roles
 ```
 packer build -var-file packer/variables.json packer/app.json
 ```
+migrate role to separate github repository
+1. base .travis.yml
+```
+language: python
+python:
+- '3.6'
+install:
+- pip install ansible>=2.4.0 molecule apache-libcloud pycrypto
+script:
+- molecule --debug test
+after_script:
+- molecule --debug destroy
+```
+2. create keys, then add it to project metadata in GCP
+```
+ssh-keygen -t rsa -f google_compute_engine -C 'travis' -q -N ''
+```
+3. 

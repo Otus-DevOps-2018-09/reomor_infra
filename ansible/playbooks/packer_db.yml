@@ -1,0 +1,6 @@
+---
+- name: Mongo installation
+  hosts: all
+  become: true
+  roles:
+   - db

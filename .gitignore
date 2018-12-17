@@ -7,3 +7,13 @@ variables.json
 *.retry
 .vscode
 credentials/*
+jdauphant.nginx
+# Vagrant and molecule
+.vagrant/
+*.log
+*.pyc
+.molecule
+.cache
+.pytest_cache
+role-test
+db

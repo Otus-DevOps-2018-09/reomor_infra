@@ -1,0 +1,6 @@
+---
+- name: Ruby installation
+  hosts: all
+  become: true
+  roles:
+   - app

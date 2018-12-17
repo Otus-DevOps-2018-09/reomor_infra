@@ -10,13 +10,15 @@ resource "google_compute_instance" "app" {
     }
   }
 
+  /*
   connection {
     type        = "ssh"
     user        = "appuser"
     agent       = false
     private_key = "${file(var.private_key_path)}"
   }
-
+  */
+  
   network_interface {
     network = "default"
 
@@ -41,6 +43,19 @@ resource "google_compute_firewall" "firewall_puma" {
   allow {
     protocol = "tcp"
     ports    = ["9292"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["reddit-app"]
+}
+
+resource "google_compute_firewall" "nginx_port" {
+  name    = "allow-nginx-default"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80"]
   }
 
   source_ranges = ["0.0.0.0/0"]

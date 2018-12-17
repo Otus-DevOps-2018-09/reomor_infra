@@ -1,6 +1,6 @@
 ---
 - name: App deploy
-  hosts: reddit-app
+  hosts: app
   tasks:
     - name: Fetch the latest version of application code
       git:
@@ -14,7 +14,7 @@
         state: present
         chdir: /home/appuser/reddit
 
-  handlers:  
+  handlers:
   - name: restart puma
     become: true
     systemd: name=puma state=restarted

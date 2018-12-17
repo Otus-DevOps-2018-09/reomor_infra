@@ -370,7 +370,7 @@ ansible all -m ping -i ./dynamic_hosts.sh
 [![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/reomor_infra.svg?branch=ansible-2)](https://github.com/Otus-DevOps-2018-09/reomor_infra/tree/ansible-2)
 
 ### description
-...
+
 ```
 pip install apache-libcloud
 ```
@@ -546,4 +546,52 @@ ansible -i ./dynamic-inventory/ reddit-db -m ping
 build packer image from root
 ```
 packer build -var-file packer/variables.json packer/app.json
+```
+
+## HW10
+
+[![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/reomor_infra.svg?branch=ansible-3)](https://github.com/Otus-DevOps-2018-09/reomor_infra/tree/ansible-3)
+
+### description
+
+create ansible role structure
+```
+ansible-galaxy init role-name
+```
+run ansible with roles with dynamic inventory
+```
+. export_vars.gpe.sh
+ansible-playbook site.yml -i ./dynamic-inventory/ --check
+ansible-playbook site.yml -i ./dynamic-inventory
+```
+group_vars directory in playbook-dir or inventory-file allows creating files with vars for groups
+```
+ansible-playbook playbooks/site.yml --check
+ansible-playbook playbooks/site.yml
+```
+
+```
+ansible-playbook -i environments/prod/inventory playbooks/site.yml --check
+```
+install nginx
+```
+ansible-galaxy install -r environments/stage/requirements.yml
+```
+add vault_password_file in ansible.cfg and encrypt
+```
+vault_password_key = ~/.ansible/vault.key
+ansible-vault encrypt environments/prod/credentials.yml
+ansible-vault edit environments/prod/credentials.yml
+ansible-vault decrypt environments/prod/credentials.yml
+```
+add dynamic inventory to environment
+```
+. export_vars_gpe.sh
+ansible-playbook -i environments/stage/dynamic-inventory.sh playbooks/site.yml --check
+ansible-playbook -i environments/stage/dynamic-inventory.sh playbooks/site.yml
+```
+in order to use dynamic inventory with GCP you have to name files in group_var like tag_host-name
+i've just done sed from that to host-name
+```
+./dynamic-inventory/gce.py --list | sed 's/tag_reddit-db/db/g; s/tag_reddit-app/app/g; s/reddit-db/db/g; s/reddit-app/app/g'
 ```

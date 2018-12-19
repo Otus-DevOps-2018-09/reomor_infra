@@ -595,3 +595,198 @@ i've just done sed from that to host-name
 ```
 ./dynamic-inventory/gce.py --list | sed 's/tag_reddit-db/db/g; s/tag_reddit-app/app/g; s/reddit-db/db/g; s/reddit-app/app/g'
 ```
+
+## HW11
+
+[![Build Status](https://api.travis-ci.com/Otus-DevOps-2018-09/reomor_infra.svg?branch=ansible-4)](https://github.com/Otus-DevOps-2018-09/reomor_infra/tree/ansible-4)
+
+### description
+Vagrantfile example
+```
+Vagrant.configure("2") do |config|
+
+  config.vm.provider :virtualbox do |v|
+    v.memory = 512
+  end
+
+  config.vm.define "dbserver" do |db|
+    db.vm.box = "ubuntu/xenial64"
+    db.vm.hostname = "dbserver"
+    db.vm.network :private_network, ip: "10.10.10.10"
+  end
+  
+  config.vm.define "appserver" do |app|
+    app.vm.box = "ubuntu/xenial64"
+    app.vm.hostname = "appserver"
+    app.vm.network :private_network, ip: "10.10.10.20"
+  end
+end
+```
+vagrant commands
+```
+vagrant up
+vagrant box list
+vagrant status
+```
+provisioning
+```
+vagrant destroy
+vagrant provision dbserver
+```
+provision example
+```
+...
+  db.vm.provision "ansible" do |ansible|
+      ansible.playbook = "playbooks/site.yml"
+      ansible.groups = {
+        "db" => ["dbserver"],
+        "db:vars" => {"mongo_bind_ip" => "0.0.0.0"}
+      }
+    end
+...
+```
+inventory is generated automatically according to Vagrantfile like
+> cat .vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory
+```
+[db] #group
+dbserver 10.10.10.20
+```
+add extra_vars with the highest priority
+ubuntu is default user in vagrant VM
+```
+...
+ansible.extra_vars = {
+    "deploy_user" => "ubuntu"
+  }
+...
+```
+add nginx proxy settings in Vagrantfile
+```
+...
+ansible.extra_vars = {
+    deploy_user: "ubuntu",
+    nginx_sites: {
+      "default" => [
+        "listen 80",
+        "server_name 'reddit'",
+        "location / { proxy_pass http://127.0.0.1:9292; }"
+      ]
+    }
+  }
+...
+```
+[install virtualenv](https://docs.python-guide.org/dev/virtualenvs/)
+```
+pip install virtualenv
+cd my_project_folder
+virtualenv my_project
+source my_project/bin/activate
+pip install -r requirements.txt
+deactivate
+```
+molecule init in
+> ansible/roles/db
+```
+molecule init scenario --scenario-name default -r db -d vagrant
+```
+test file example (db/molecule/default/tests/test_default.py)
+```
+import os
+
+import testinfra.utils.ansible_runner
+
+testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
+
+# check if MongoDB is enabled and running
+def test_mongo_running_and_enabled(host):
+    mongo = host.service("mongod")
+    assert mongo.is_running
+    assert mongo.is_enabled
+
+# check if configuration file contains the required line
+def test_config_file(host):
+    config_file = host.file('/etc/mongod.conf')
+    assert config_file.contains('bindIp: 0.0.0.0')
+    assert config_file.is_file
+```
+VM description in db/molecule/default/molecule.yml
+create test VM in ansible/roles/db
+```
+molecule create
+molecule list
+molecule login -h instance # ssh
+```
+playbook for role applying db/molecule/default/playbook.yml
+```
+---
+- name: Converge
+  become: true
+  hosts: all
+  vars:
+    mongo_bind_ip: 0.0.0.0
+  roles:
+    - role: db
+```
+apply playbook.yml
+```
+molecule converge
+```
+run tests
+```
+molecule verify
+```
+build packer images with ansible roles
+```
+packer build -var-file packer/variables.json packer/app.json
+```
+migrate role to separate github repository
+1. base .travis.yml
+```
+language: python
+python:
+- '3.6'
+install:
+- pip install ansible>=2.4.0 molecule apache-libcloud pycrypto
+script:
+- molecule --debug test
+after_script:
+- molecule --debug destroy
+```
+2. create keys, then add it to project metadata in GCP
+```
+ssh-keygen -t rsa -f google_compute_engine -C 'travis' -q -N ''
+```
+3. add repository https://travis-ci.org/dashboard (auth through github)
+4. add
+```
+travis encrypt GCE_SERVICE_ACCOUNT_EMAIL='ci-test@infra-179032.iam.gserviceaccount.com' --add
+travis encrypt GCE_CREDENTIALS_FILE="$(pwd)/credentials.json" --add
+travis encrypt GCE_PROJECT_ID='infra-179032' --add
+```
+5. encrypt secrets
+```
+tar cvf secrets.tar credentials.json google_compute_engine
+travis login
+travis encrypt-file secrets.tar --add
+```
+add to .travis.yml
+```
+script:
+- molecule create
+- molecule converge
+- molecule verify
+after_script:
+- molecule destroy
+before_install:
+  - openssl aes-256-cbc -K $encrypted_48923027f180_key -iv $encrypted_48923027f180_iv
+    -in secrets.tar.enc -out secrets.tar -d
+  - tar xvf secrets.tar
+  - mv google_compute_engine /home/travis/.ssh/
+  - chmod 0600 /home/travis/.ssh/google_compute_engine
+```
+name of the repo is a name of the role
+pull it back
+```
+ansible-galaxy install git+https://github.com/reomor/db.git
+```

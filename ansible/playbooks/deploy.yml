@@ -13,6 +13,7 @@
       notify: restart puma
 
     - name: bundle install
+      retries: 3
       bundler:
         state: present
         chdir: "/home/{{ deploy_user }}/reddit"

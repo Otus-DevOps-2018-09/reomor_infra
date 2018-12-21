@@ -16,6 +16,8 @@
       bundler:
         state: present
         chdir: "/home/{{ deploy_user }}/reddit"
+      register: result
+      until: result|succeeded
 
   handlers:
   - name: restart puma
